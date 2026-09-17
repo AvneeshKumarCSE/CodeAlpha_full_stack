@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaStore — Modern E-Commerce Platform</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Project CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Site Header & Navigation -->
+  <header class="site-header">
+    <div class="container header-container">
+      <a href="#" class="logo">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span>Alpha<strong>Store</strong></span>
+      </a>
+
+      <!-- Search Bar -->
+      <div class="search-bar">
+        <i class="fa-solid fa-magnifying-glass search-icon"></i>
+        <input type="text" id="searchInput" placeholder="Search products, brands, categories...">
+      </div>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Cart Button -->
+        <button class="btn-icon" id="openCartBtn" onclick="openCartDrawer()">
+          <i class="fa-solid fa-cart-shopping"></i>
+          <span>Cart</span>
+          <span class="cart-badge" id="cartBadge" style="display: none;">0</span>
+        </button>
+
+        <!-- Login / User Profile -->
+        <button class="btn-primary" id="loginBtn" onclick="openAuthModal()">
+          <i class="fa-regular fa-user"></i> Sign In
+        </button>
+
+        <div class="user-menu-wrapper">
+          <button class="btn-icon" id="userMenuBtn" style="display: none;" onclick="toggleUserDropdown()">
+            <i class="fa-solid fa-circle-user" style="font-size: 1.2rem; color: var(--primary);"></i>
+            <span id="userNameDisplay">Account</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 0.75rem;"></i>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="user-dropdown-header">
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Signed in as</span>
+              <strong id="dropdownEmail">Customer</strong>
+            </div>
+            <div class="user-dropdown-item" onclick="openOrdersModal()">
+              <i class="fa-solid fa-box"></i> My Orders
+            </div>
+            <div class="user-dropdown-item danger" onclick="Auth.logout()">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Promotional Banner -->
+  <section class="hero-banner">
+    <div class="container">
+      <div class="hero-content">
+        <span class="hero-tag"><i class="fa-solid fa-bolt"></i> Official CodeAlpha Full Stack Project</span>
+        <h1>Curated Electronics, Fashion & Modern Essentials</h1>
+        <p>Explore high-performance gear, premium everyday apparel, and accessories with instant checkout and real-time order tracking.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Shopping Section -->
+  <main class="container">
+    <div class="filters-bar">
+      <div class="category-pills" id="categoryPills">
+        <!-- Injected via JavaScript -->
+      </div>
+      <div class="results-count" id="resultsCount">Loading products...</div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="product-grid" id="productGrid">
+      <!-- Injected via JavaScript -->
+    </div>
+  </main>
+
+  <!-- Product Details Modal -->
+  <div class="modal-overlay" id="productDetailModal">
+    <div class="modal-card" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3>Product Details</h3>
+        <button class="btn-close" onclick="closeModal('productDetailModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="productDetailContent">
+        <!-- Dynamic content -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Slide-out Shopping Cart Drawer -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()"></div>
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h2><i class="fa-solid fa-cart-shopping" style="color: var(--primary);"></i> Your Cart</h2>
+      <button class="btn-close" onclick="closeCartDrawer()">&times;</button>
+    </div>
+
+    <div class="empty-state" id="cartEmptyState" style="margin: 2rem 1rem; display: none;">
+      <i class="fa-solid fa-basket-shopping"></i>
+      <h3>Your Cart is Empty</h3>
+      <p>Discover products and add items to begin checkout.</p>
+    </div>
+
+    <div class="cart-items-list" id="cartItemsList">
+      <!-- Injected dynamically -->
+    </div>
+
+    <div class="cart-footer" id="cartFooter">
+      <div class="cart-summary-line">
+        <span>Subtotal</span>
+        <span id="cartSubtotal">$0.00</span>
+      </div>
+      <div class="cart-summary-line">
+        <span>Estimated Tax (8%)</span>
+        <span id="cartTax">$0.00</span>
+      </div>
+      <div class="cart-summary-line">
+        <span>Shipping</span>
+        <span style="color: var(--success); font-weight: 600;">FREE</span>
+      </div>
+      <div class="cart-total-line">
+        <span>Total Amount</span>
+        <span id="cartTotal">$0.00</span>
+      </div>
+      <button class="btn-primary btn-checkout" onclick="proceedToCheckout()">
+        Proceed to Checkout <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Checkout Modal -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-credit-card" style="color: var(--primary);"></i> Complete Order</h3>
+        <button class="btn-close" onclick="closeModal('checkoutModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="checkoutForm" onsubmit="handleCheckoutSubmit(event)">
+          <div style="margin-bottom: 1.25rem; padding: 0.85rem; background: #f8fafc; border-radius: var(--radius-sm); border: 1px solid var(--border); display: flex; justify-content: space-between;">
+            <span id="checkoutItemCount" style="font-weight: 600;">0 items</span>
+            <span id="checkoutTotalDisplay" style="font-weight: 800; color: var(--primary);">$0.00</span>
+          </div>
+
+          <div class="form-group">
+            <label for="shippingName">Full Name *</label>
+            <input type="text" id="shippingName" class="form-control" required placeholder="Jane Doe">
+          </div>
+
+          <div class="form-group">
+            <label for="shippingAddress">Street Address *</label>
+            <input type="text" id="shippingAddress" class="form-control" required placeholder="123 Market Street, Apt 4B">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="shippingCity">City *</label>
+              <input type="text" id="shippingCity" class="form-control" required placeholder="San Francisco">
+            </div>
+            <div class="form-group">
+              <label for="shippingPostalCode">Postal / ZIP Code *</label>
+              <input type="text" id="shippingPostalCode" class="form-control" required placeholder="94103">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="paymentMethod">Payment Method</label>
+            <select id="paymentMethod" class="form-control">
+              <option value="Credit / Debit Card">Credit / Debit Card (Simulated)</option>
+              <option value="Cash on Delivery">Cash on Delivery (COD)</option>
+              <option value="UPI / NetBanking">UPI / NetBanking</option>
+            </select>
+          </div>
+
+          <button type="submit" id="placeOrderBtn" class="btn-primary" style="width: 100%; margin-top: 1rem; justify-content: center;">
+            Place Order Now
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Order Success Modal -->
+  <div class="modal-overlay" id="orderSuccessModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Order Confirmed!</h3>
+        <button class="btn-close" onclick="closeModal('orderSuccessModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="orderSuccessContent">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- My Orders History Modal -->
+  <div class="modal-overlay" id="ordersModal">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-receipt" style="color: var(--primary);"></i> My Order History</h3>
+        <button class="btn-close" onclick="closeModal('ordersModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="ordersListContainer">
+        <!-- Orders injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- User Auth Modal (Login & Register) -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Account Access</h3>
+        <button class="btn-close" onclick="closeModal('authModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="auth-tabs">
+          <button class="auth-tab-btn active" id="loginTabBtn" onclick="switchAuthTab('login')">Sign In</button>
+          <button class="auth-tab-btn" id="signupTabBtn" onclick="switchAuthTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" class="form-control" required placeholder="demo@codealpha.com">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+            Sign In
+          </button>
+          <div class="demo-login-box">
+            <p><strong>Quick Evaluation Demo Account</strong></p>
+            <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 0.4rem 0.8rem;" onclick="fillDemoCredentials()">
+              Auto-fill Demo Credentials
+            </button>
+          </div>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="signupForm" style="display: none;" onsubmit="handleSignupSubmit(event)">
+          <div class="form-group">
+            <label for="signupName">Full Name</label>
+            <input type="text" id="signupName" class="form-control" required placeholder="Alex Rivera">
+          </div>
+          <div class="form-group">
+            <label for="signupEmail">Email Address</label>
+            <input type="email" id="signupEmail" class="form-control" required placeholder="alex@example.com">
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Password (minimum 6 characters)</label>
+            <input type="password" id="signupPassword" class="form-control" required minlength="6" placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+            Register Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2026 AlphaStore. Built for CodeAlpha Full Stack Development Internship Task 1.</p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

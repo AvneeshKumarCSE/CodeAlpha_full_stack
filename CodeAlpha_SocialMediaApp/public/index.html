@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AlphaPulse — CodeAlpha Social Platform</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Project CSS -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- LEFT SIDEBAR -->
+    <aside class="sidebar-left">
+      <div>
+        <div class="brand-logo">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Alpha<strong>Pulse</strong></span>
+        </div>
+
+        <nav class="nav-links">
+          <a href="#" class="nav-item active" onclick="loadFeed('all'); return false;">
+            <i class="fa-solid fa-house"></i>
+            <span>Home</span>
+          </a>
+          <a href="#" class="nav-item" onclick="if(Auth.getUser()){ openProfileModal(Auth.getUser().username); } else { openAuthModal(); } return false;">
+            <i class="fa-regular fa-user"></i>
+            <span>Profile</span>
+          </a>
+          <a href="#" class="nav-item" onclick="document.getElementById('composerTextarea').focus(); return false;">
+            <i class="fa-regular fa-pen-to-square"></i>
+            <span>Create</span>
+          </a>
+        </nav>
+
+        <button class="btn-compose" onclick="document.getElementById('composerTextarea').focus();">
+          <i class="fa-solid fa-feather-pointed"></i> Post
+        </button>
+      </div>
+
+      <!-- User Account Pill (Bottom) -->
+      <div class="sidebar-user-pill" id="sidebarUserPill" style="display: none;" onclick="openProfileModal(Auth.getUser().username)">
+        <img src="" alt="Avatar" id="sidebarUserAvatar" class="avatar-img">
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name" id="sidebarUserName">User</div>
+          <div class="sidebar-user-handle" id="sidebarUserHandle">@username</div>
+        </div>
+        <button title="Sign Out" onclick="event.stopPropagation(); Auth.logout();" style="color: var(--danger); font-size: 1.1rem; padding: 0.3rem;">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        </button>
+      </div>
+
+      <!-- Guest Login Prompt Box -->
+      <div id="guestActionBox" style="padding: 1rem; background: var(--primary-light); border-radius: var(--radius-md); text-align: center;">
+        <p style="font-size: 0.85rem; font-weight: 600; color: var(--primary-hover); margin-bottom: 0.75rem;">Join the conversation</p>
+        <button class="btn-primary" style="width: 100%; border-radius: 9999px; font-size: 0.88rem;" onclick="openAuthModal('login')">
+          Sign In / Register
+        </button>
+      </div>
+    </aside>
+
+    <!-- MIDDLE MAIN TIMELINE -->
+    <main class="main-feed">
+      <header class="feed-header">
+        <h2>Home</h2>
+        <div class="feed-tabs">
+          <button class="feed-tab active" id="tabAll" onclick="loadFeed('all')">Discover</button>
+          <button class="feed-tab" id="tabFollowing" onclick="if(Auth.getUser()){ loadFeed('following'); } else { openAuthModal(); }">Following</button>
+        </div>
+      </header>
+
+      <!-- Post Composer -->
+      <section class="composer-card">
+        <img src="https://api.dicebear.com/7.x/identicon/svg?seed=guest" alt="Avatar" id="composerAvatar" class="avatar-img">
+        <div class="composer-content">
+          <textarea id="composerTextarea" class="composer-textarea" placeholder="What is happening in tech today?"></textarea>
+          <input type="url" id="composerImageUrl" class="composer-image-input" placeholder="Paste image URL (e.g. https://images.unsplash.com/...)">
+          <div class="composer-toolbar">
+            <div class="composer-icons">
+              <button class="icon-action-btn" title="Add Image URL" onclick="toggleImageInput()">
+                <i class="fa-regular fa-image"></i>
+              </button>
+            </div>
+            <button class="btn-post" id="btnSubmitPost" onclick="handleCreatePost()">
+              Post
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Posts Stream Container -->
+      <div class="posts-stream" id="postsStream">
+        <!-- Dynamic posts injected here -->
+      </div>
+    </main>
+
+    <!-- RIGHT SIDEBAR WIDGETS -->
+    <aside class="sidebar-right">
+      <!-- Quick User Card -->
+      <div class="widget-card user-quick-card" id="userQuickCard" style="display: none;">
+        <img src="" alt="Avatar" id="quickCardAvatar" class="quick-card-avatar">
+        <h4 style="font-weight: 800; font-size: 1.1rem;" id="quickCardName">Name</h4>
+        <div style="color: var(--text-muted); font-size: 0.85rem;" id="quickCardHandle">@handle</div>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;" id="quickCardBio"></p>
+        <div class="quick-card-stats">
+          <div class="stat-box"><span class="stat-num" id="quickStatPosts">0</span><span class="stat-label">Posts</span></div>
+          <div class="stat-box"><span class="stat-num" id="quickStatFollowers">0</span><span class="stat-label">Followers</span></div>
+          <div class="stat-box"><span class="stat-num" id="quickStatFollowing">0</span><span class="stat-label">Following</span></div>
+        </div>
+      </div>
+
+      <!-- Who to Follow Suggestions -->
+      <div class="widget-card">
+        <h3><i class="fa-solid fa-users" style="color: var(--primary);"></i> Who to follow</h3>
+        <div class="suggestions-list" id="suggestionsContainer">
+          <!-- Dynamic suggestions -->
+        </div>
+      </div>
+
+      <div style="padding: 0 0.5rem; font-size: 0.78rem; color: var(--text-muted); line-height: 1.6;">
+        <p>&copy; 2026 AlphaPulse &bull; Built for CodeAlpha Full Stack Internship (Task 2).</p>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Profile Modal -->
+  <div class="modal-overlay" id="profileModal">
+    <div class="modal-card" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3>User Profile</h3>
+        <button class="btn-close" onclick="closeModal('profileModal')">&times;</button>
+      </div>
+      <div class="modal-body" id="profileModalContent">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div class="modal-overlay" id="editProfileModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit Profile</h3>
+        <button class="btn-close" onclick="closeModal('editProfileModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form onsubmit="handleEditProfileSubmit(event)">
+          <div class="form-group">
+            <label for="editName">Full Name</label>
+            <input type="text" id="editName" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="editBio">Bio</label>
+            <textarea id="editBio" class="form-control" rows="3" placeholder="Tell the community about yourself..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editAvatar">Avatar Image URL</label>
+            <input type="url" id="editAvatar" class="form-control" placeholder="https://...">
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; border-radius: 9999px; margin-top: 0.5rem;">
+            Save Changes
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Authentication Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Join CodeAlpha Community</h3>
+        <button class="btn-close" onclick="closeModal('authModal')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.25rem;">
+          <button class="feed-tab active" id="authTabLogin" style="flex: 1;" onclick="switchAuthTab('login')">Sign In</button>
+          <button class="feed-tab" id="authTabSignup" style="flex: 1;" onclick="switchAuthTab('signup')">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="formLogin" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label for="loginIdentifier">Email or Username</label>
+            <input type="text" id="loginIdentifier" class="form-control" required placeholder="alex_dev">
+          </div>
+          <div class="form-group">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" class="form-control" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; border-radius: 9999px; margin-top: 0.5rem;">
+            Sign In
+          </button>
+          <div style="margin-top: 1rem; padding: 0.75rem; background: var(--primary-light); border-radius: var(--radius-sm); text-align: center;">
+            <p style="font-size: 0.82rem; color: var(--primary-hover); margin-bottom: 0.4rem;"><strong>Quick Evaluation Account</strong></p>
+            <button type="button" class="btn-primary" style="font-size: 0.78rem; padding: 0.35rem 0.75rem; border-radius: 9999px;" onclick="fillDemoAccount()">
+              Auto-fill Demo Credentials
+            </button>
+          </div>
+        </form>
+
+        <!-- Signup Form -->
+        <form id="formSignup" style="display: none;" onsubmit="handleSignupSubmit(event)">
+          <div class="form-group">
+            <label for="signupName">Full Name</label>
+            <input type="text" id="signupName" class="form-control" required placeholder="Sarah Connor">
+          </div>
+          <div class="form-group">
+            <label for="signupUsername">Unique Username</label>
+            <input type="text" id="signupUsername" class="form-control" required placeholder="sarah_c">
+          </div>
+          <div class="form-group">
+            <label for="signupEmail">Email Address</label>
+            <input type="email" id="signupEmail" class="form-control" required placeholder="sarah@example.com">
+          </div>
+          <div class="form-group">
+            <label for="signupPassword">Password (min 6 chars)</label>
+            <input type="password" id="signupPassword" class="form-control" required minlength="6" placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-primary" style="width: 100%; border-radius: 9999px; margin-top: 0.5rem;">
+            Create Account
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
